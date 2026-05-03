@@ -1,5 +1,6 @@
 "use client";
 
+import './globals.css';\
 import { useEffect, useState } from "react";
 import { initialGames } from "../lib/games";
 import GameCard from "../components/GameCard";
