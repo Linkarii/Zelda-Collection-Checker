@@ -31,11 +31,10 @@ export default function Home() {
   }, [games]);
 
   // AUTO-FETCH LOGIC
-  const fetchGameArt = async () => {
+    const fetchGameArt = async () => {
     if (!newGame.title) return alert("Please type a game title first!");
     setIsSearching(true);
     try {
-      // FIXED: URL now includes /api/games and correctly injects the API key
       const response = await fetch(
         `https://rawg.io{RAWG_API_KEY}&search=${encodeURIComponent(newGame.title)}&page_size=1`
       );
@@ -43,7 +42,7 @@ export default function Home() {
       const data = await response.json();
 
       if (data.results && data.results.length > 0) {
-        const game = data.results[0]; 
+        const game = data.results[0];
         setNewGame({
           ...newGame,
           title: game.name,
@@ -59,6 +58,7 @@ export default function Home() {
     }
     setIsSearching(false);
   };
+
 
     if (!response.ok) {
       throw new Error(`API responded with status: ${response.status}`);
