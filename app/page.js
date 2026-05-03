@@ -12,9 +12,6 @@ export default function Home() {
   const [sort, setSort] = useState("newest");
   const [showForm, setShowForm] = useState(false);
   const [newGame, setNewGame] = useState({ title: "", platform: "", year: "", image: "" });
-  const [isSearching, setIsSearching] = useState(false);
-
-  const RAWG_API_KEY = "162622a36e424ebf8fcc76150a098d93";
 
   useEffect(() => {
     const saved = localStorage.getItem("games");
@@ -27,40 +24,14 @@ export default function Home() {
     }
   }, [games]);
 
-  const fetchGameArt = async () => {
-    if (!newGame.title) return alert("Please type a game title first!");
-    setIsSearching(true);
-    try {
-      const response = await fetch(
-        `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(newGame.title)}&page_size=1`
-      );
-      const data = await response.json();
-      if (data.results && data.results.length > 0) {
-        const game = data.results[0];
-        setNewGame({
-          ...newGame,
-          title: game.name,
-          year: game.released ? game.released.substring(0, 4) : "",
-          image: game.background_image
-        });
-      } else {
-        alert("Could not find that game.");
-      }
-    } catch (err) {
-      console.error("Search Error:", err);
-      alert("Error searching database.");
-    }
-    setIsSearching(false);
-  };
-
   const handleAddGame = (e) => {
     e.preventDefault();
-    const gameToAdd = {
-      ...newGame,
-      id: Date.now(),
-      year: parseInt(newGame.year) || 0,
-      owned: false,
-      condition: ""
+    const gameToAdd = { 
+      ...newGame, 
+      id: Date.now(), 
+      year: parseInt(newGame.year) || 0, 
+      owned: false, 
+      condition: "" 
     };
     setGames([gameToAdd, ...games]);
     setNewGame({ title: "", platform: "", year: "", image: "" });
@@ -82,6 +53,7 @@ export default function Home() {
   };
 
   const platforms = ["All", ...new Set(games.map((g) => g.platform))];
+  
   let filtered = games.filter((g) => g.title.toLowerCase().includes(search.toLowerCase()));
   if (platform !== "All") filtered = filtered.filter((g) => g.platform === platform);
   filtered.sort((a, b) => sort === "newest" ? b.year - a.year : a.year - b.year);
@@ -112,22 +84,38 @@ export default function Home() {
 
         {showForm && (
           <div className="bg-zinc-800/50 border border-zinc-700 p-6 rounded-2xl mb-8">
-            <div className="flex gap-2 mb-4">
-              <input 
-                placeholder="Type Game Title..." 
-                className="flex-1 bg-zinc-900 p-3 rounded-lg border border-zinc-700 outline-none"
-                value={newGame.title}
-                onChange={e => setNewGame({...newGame, title: e.target.value})}
-              />
-              <button type="button" onClick={fetchGameArt} disabled={isSearching} className="bg-blue-600 px-4 rounded-lg font-bold transition">
-                {isSearching ? "Searching..." : "Search Art"}
-              </button>
-            </div>
             <form onSubmit={handleAddGame} className="grid gap-4 sm:grid-cols-2">
-              <input placeholder="Console" className="bg-zinc-900 p-3 rounded-lg border border-zinc-700" value={newGame.platform} onChange={e => setNewGame({...newGame, platform: e.target.value})} required />
-              <input placeholder="Year" type="number" className="bg-zinc-900 p-3 rounded-lg border border-zinc-700" value={newGame.year} onChange={e => setNewGame({...newGame, year: e.target.value})} required />
-              <input placeholder="Image URL (Automatic)" className="sm:col-span-2 bg-zinc-900 p-3 rounded-lg border border-zinc-700 text-zinc-500 italic" value={newGame.image} readOnly />
-              <button type="submit" className="sm:col-span-2 bg-white text-black py-3 rounded-lg font-bold hover:bg-zinc-200">Save to Collection</button>
+              <input 
+                placeholder="Game Title" 
+                className="sm:col-span-2 bg-zinc-900 p-3 rounded-lg border border-zinc-700 outline-none" 
+                value={newGame.title} 
+                onChange={e => setNewGame({...newGame, title: e.target.value})} 
+                required 
+              />
+              <input 
+                placeholder="Console" 
+                className="bg-zinc-900 p-3 rounded-lg border border-zinc-700" 
+                value={newGame.platform} 
+                onChange={e => setNewGame({...newGame, platform: e.target.value})} 
+                required 
+              />
+              <input 
+                placeholder="Year" 
+                type="number" 
+                className="bg-zinc-900 p-3 rounded-lg border border-zinc-700" 
+                value={newGame.year} 
+                onChange={e => setNewGame({...newGame, year: e.target.value})} 
+                required 
+              />
+              <input 
+                placeholder="Image URL" 
+                className="sm:col-span-2 bg-zinc-900 p-3 rounded-lg border border-zinc-700" 
+                value={newGame.image} 
+                onChange={e => setNewGame({...newGame, image: e.target.value})} 
+              />
+              <button type="submit" className="sm:col-span-2 bg-white text-black py-3 rounded-lg font-bold hover:bg-zinc-200">
+                Save to Collection
+              </button>
             </form>
           </div>
         )}
