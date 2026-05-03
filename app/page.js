@@ -32,7 +32,7 @@ export default function Home() {
     setIsSearching(true);
     try {
       const response = await fetch(
-        `https://rawg.io{RAWG_API_KEY}&search=${encodeURIComponent(newGame.title)}&page_size=1`
+        `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(newGame.title)}&page_size=1`
       );
       const data = await response.json();
       if (data.results && data.results.length > 0) {
