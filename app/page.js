@@ -31,30 +31,39 @@ export default function Home() {
   }, [games]);
 
   // AUTO-FETCH LOGIC
-  const fetchGameArt = async () => {
-    if (!newGame.title) return alert("Please type a game title first!");
-    setIsSearching(true);
-    try {
-      const response = await fetch(
-        `https://rawg.io{RAWG_API_KEY}&search=${encodeURIComponent(newGame.title)}&page_size=1`
-      );
-      const data = await response.json();
-      if (data.results && data.results.length > 0) {
-        const game = data.results[0];
-        setNewGame({
-          ...newGame,
-          title: game.name,
-          year: game.released ? game.released.split("-")[0] : "", // Fixed to get just the year
-          image: game.background_image
-        });
-      } else {
-        alert("Could not find that game. Try a different name!");
-      }
-    } catch (err) {
-      alert("Error searching database. Check your connection!");
+const fetchGameArt = async () => {
+  if (!newGame.title) return alert("Please type a game title first!");
+  setIsSearching(true);
+  try {
+    // Corrected URL structure
+    const response = await fetch(
+      `https://rawg.io{RAWG_API_KEY}&search=${encodeURIComponent(newGame.title)}&page_size=1`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`API responded with status: ${response.status}`);
     }
-    setIsSearching(false);
-  };
+
+    const data = await response.json();
+    if (data.results && data.results.length > 0) {
+      const game = data.results[0]; // Added the index [0] to get the first result
+      setNewGame({
+        ...newGame,
+        title: game.name,
+        // Grabs only the first 4 digits (the year) from the release date
+        year: game.released ? game.released.substring(0, 4) : "",
+        image: game.background_image
+      });
+    } else {
+      alert("Could not find that game. Try a different name!");
+    }
+  } catch (err) {
+    console.error("Search Error:", err);
+    alert("Error searching database. Check your API key or internet connection!");
+  }
+  setIsSearching(false);
+};
+
 
   const handleAddGame = (e) => {
     e.preventDefault();
