@@ -31,7 +31,7 @@ export default function Home() {
   }, [games]);
 
   // AUTO-FETCH LOGIC
-    const fetchGameArt = async () => {
+  const fetchGameArt = async () => {
     if (!newGame.title) return alert("Please type a game title first!");
     setIsSearching(true);
     try {
@@ -39,9 +39,9 @@ export default function Home() {
         `https://rawg.io{RAWG_API_KEY}&search=${encodeURIComponent(newGame.title)}&page_size=1`
       );
       const data = await response.json();
-      
+
       if (data.results && data.results.length > 0) {
-        const game = data.results[0];
+        const game = data.results[0]; // Added [0] to get the specific game
         setNewGame({
           ...newGame,
           title: game.name,
@@ -57,6 +57,7 @@ export default function Home() {
     }
     setIsSearching(false);
   };
+
 
 
     
