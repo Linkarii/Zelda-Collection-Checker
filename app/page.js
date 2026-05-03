@@ -31,7 +31,7 @@ export default function Home() {
   }, [games]);
 
   // AUTO-FETCH LOGIC
-  const fetchGameArt = async () => {
+    const fetchGameArt = async () => {
     if (!newGame.title) return alert("Please type a game title first!");
     setIsSearching(true);
     try {
@@ -39,8 +39,9 @@ export default function Home() {
         `https://rawg.io{RAWG_API_KEY}&search=${encodeURIComponent(newGame.title)}&page_size=1`
       );
       const data = await response.json();
+      
       if (data.results && data.results.length > 0) {
-        const game = data.results[0]; // Gets the first match
+        const game = data.results[0];
         setNewGame({
           ...newGame,
           title: game.name,
@@ -48,14 +49,15 @@ export default function Home() {
           image: game.background_image
         });
       } else {
-        alert("Could not find that game.");
+        alert("Could not find that game. Try a different name!");
       }
     } catch (err) {
       console.error("Search Error:", err);
-      alert("Search failed. Check your API key!");
+      alert("Error searching database. Check your API key or internet connection!");
     }
     setIsSearching(false);
   };
+
 
     
     if (!response.ok) {
