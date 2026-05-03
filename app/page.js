@@ -18,10 +18,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (games.length) {
+    // Only save if games actually has data to avoid overwriting with nothing
+    if (games && games.length > 0) {
       localStorage.setItem("games", JSON.stringify(games));
     }
   }, [games]);
+
 
   const toggleOwned = (id) => {
     setGames((prev) =>
