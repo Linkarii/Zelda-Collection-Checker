@@ -6,8 +6,9 @@ export default function GameCard({ game, onToggle, onCondition }) {
         <img 
           src={game.image} 
           alt={game.title} 
-          className="w-full h-full object-cover object-top transition-transform duration-700 hover:scale-105" 
+          className="w-full h-full object-contain p-2 transition-transform duration-700 hover:scale-105" 
         />
+
         {/* Floating Platform Tag */}
         <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-white/10">
           {game.platform}
