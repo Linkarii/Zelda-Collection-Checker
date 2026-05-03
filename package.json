@@ -1,0 +1,8 @@
+"dependencies": {
+  "next": "latest",
+  "tailwindcss": "latest",
+  "postcss": "latest",
+  "autoprefixer": "latest",
+  "react": "latest",
+  "react-dom": "latest"
+}
