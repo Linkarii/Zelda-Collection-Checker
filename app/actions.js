@@ -2,6 +2,20 @@
 import { Redis } from "@upstash/redis"; // Note the capital R
 import { revalidatePath } from "next/cache";
 
+// actions.js
+import { revalidateTag } from 'next/cache';
+
+export async function saveGamesAction(games) {
+  await redis.set("zelda_collection", JSON.stringify(games));
+  // This clears the cache so the next person gets the fresh data
+  revalidateTag('games-list'); 
+}
+
+export async function getGamesAction() {
+  const data = await redis.get("zelda_collection");
+  return typeof data === 'string' ? JSON.parse(data) : data;
+}
+
 // This automatically looks for UPSTASH_REDIS_REST_URL and TOKEN
 const redis = Redis.fromEnv(); 
 
