@@ -1,8 +1,12 @@
+// app/actions.js
 "use server"
 import { Redis } from "@upstash/redis"
 
-// Credentials are automatically injected by Vercel after linking
-const redis = Redis.fromEnv()
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+})
+
 
 export async function saveGames(games) {
   // Stores the entire array under a single key for all users
