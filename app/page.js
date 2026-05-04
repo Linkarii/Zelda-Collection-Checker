@@ -1,4 +1,5 @@
 "use client";
+import { saveGamesAction, getGamesAction } from "./actions";
 import './globals.css';
 import { useEffect, useState } from "react";
 import { initialGames } from "../lib/games";
@@ -14,13 +15,18 @@ export default function Home() {
   const [newGame, setNewGame] = useState({ title: "", platform: "", year: "", image: "" });
 
   useEffect(() => {
-    const saved = localStorage.getItem("games");
-    setGames(saved ? JSON.parse(saved) : initialGames);
-  }, []);
+    async function loadGames() {
+      const saved = await getGamesAction();
+    // If there's nothing in the cloud yet, use your initialGames list
+      setGames(saved || initialGames);
+  }
+  loadGames();
+}, []);
 
+  // Save to Cloud whenever the 'games' list changes
   useEffect(() => {
-    if (games && games.length > 0) {
-      localStorage.setItem("games", JSON.stringify(games));
+    if (games.length > 0) {
+      saveGamesAction(games);
     }
   }, [games]);
 
