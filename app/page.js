@@ -1,7 +1,5 @@
 "use client";
-
 import { saveGames, getGames } from "./actions";
-
 import './globals.css';
 import { useEffect, useState } from "react";
 import { initialGames } from "../lib/games";
@@ -14,29 +12,21 @@ export default function Home() {
   const [platform, setPlatform] = useState("All");
   const [sort, setSort] = useState("newest");
   const [showForm, setShowForm] = useState(false);
-  const [newGame, setNewGame] = useState({
-    title: "",
-    platform: "",
-    year: "",
-    image: ""
-  });
+  const [newGame, setNewGame] = useState({ title: "", platform: "", year: "", image: "" });
 
-useEffect(() => {
-  const loadGlobalData = async () => {
-    const saved = await getGames();
-    // ONLY use initialGames if the database is completely empty (null)
-    if (saved !== null) {
-      setGames(saved);
-    } else {
-      setGames(initialGames);
-    }
-  };
-  loadGlobalData();
-}, []);
+  useEffect(() => {
+    const loadGlobalData = async () => {
+      const saved = await getGames();
+      if (saved !== null) {
+        setGames(saved);
+      } else {
+        setGames(initialGames);
+      }
+    };
+    loadGlobalData();
+  }, []);
 
-
-
-    const handleAddGame = async (e) => {
+  const handleAddGame = async (e) => {
     e.preventDefault();
     const gameToAdd = { 
       ...newGame, 
@@ -45,93 +35,42 @@ useEffect(() => {
       owned: false, 
       condition: "" 
     };
-
-    // 1. Create the new list
     const updatedGames = [gameToAdd, ...games];
-    
-    // 2. Update the local UI state
     setGames(updatedGames);
-    
-    // 3. Save to Vercel KV/Redis globally
     await saveGames(updatedGames);
-
-    // 4. Reset the form
     setNewGame({ title: "", platform: "", year: "", image: "" });
     setShowForm(false);
   };
 
   const deleteGame = async (id) => {
     if (confirm("Are you sure you want to remove this game?")) {
-      // 1. Filter the list
       const updatedGames = games.filter((g) => g.id !== id);
-      
-      // 2. Update the local UI state
       setGames(updatedGames);
-      
-      // 3. Save to Vercel KV/Redis globally
       await saveGames(updatedGames);
     }
   };
 
   const toggleOwned = async (id) => {
-    // 1. Map the new state
     const updatedGames = games.map((g) =>
       g.id === id ? { ...g, owned: !g.owned, condition: "" } : g
     );
-    
-    // 2. Update local UI
     setGames(updatedGames);
-    
-    // 3. Save globally
     await saveGames(updatedGames);
   };
 
   const updateCondition = async (id, value) => {
-    // 1. Map the new state
     const updatedGames = games.map((g) =>
       g.id === id ? { ...g, condition: value } : g
     );
-    
-    // 2. Update local UI
     setGames(updatedGames);
-    
-    // 3. Save globally
     await saveGames(updatedGames);
   };
-
-
-  const toggleOwned = async (id) => {
-  // 1. Create the updated list locally first
-    const updatedGames = games.map((g) =>
-      g.id === id ? { ...g, owned: !g.owned, condition: "" } : g
-    );
-
-  // 2. Update the UI state
-    setGames(updatedGames);
-
-  // 3. Save the new list to Redis so every device sees it
-    await saveGames(updatedGames);
-  };
-
-
-  const updateCondition = async (id, value) => {
-    const updatedGames = games.map((g) => 
-      g.id === id ? { ...g, condition: value } : g
-    );
-  
-    setGames(updatedGames);
-    await saveGames(updatedGames); // Global sync
-  };
-
 
   const platforms = ["All", ...new Set(games.map((g) => g.platform))];
-
-  let filtered = games.filter((g) =>
-    g.title.toLowerCase().includes(search.toLowerCase())
-  );
-
+  let filtered = games.filter((g) => g.title.toLowerCase().includes(search.toLowerCase()));
+  
   if (platform !== "All") filtered = filtered.filter((g) => g.platform === platform);
-
+  
   filtered.sort((a, b) => (sort === "newest" ? b.year - a.year : a.year - b.year));
 
   const ownedCount = games.filter((g) => g.owned).length;
@@ -149,17 +88,11 @@ useEffect(() => {
                 <span>{percent}%</span>
               </div>
               <div className="w-full h-2 bg-zinc-800 rounded-full mt-1">
-                <div
-                  className="h-full bg-green-500 rounded-full transition-all"
-                  style={{ width: `${percent}%` }}
-                />
+                <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${percent}%` }} />
               </div>
             </div>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-green-600 hover:bg-green-500 px-6 py-2 rounded-full font-bold transition"
-          >
+          <button onClick={() => setShowForm(!showForm)} className="bg-green-600 hover:bg-green-500 px-6 py-2 rounded-full font-bold transition">
             {showForm ? "Cancel" : "+ Add Game"}
           </button>
         </div>
@@ -167,72 +100,27 @@ useEffect(() => {
         {showForm && (
           <div className="bg-zinc-800/50 border border-zinc-700 p-6 rounded-2xl mb-8">
             <form onSubmit={handleAddGame} className="grid gap-4 sm:grid-cols-2">
-              <input
-                placeholder="Game Title"
-                className="sm:col-span-2 bg-zinc-900 p-3 rounded-lg border border-zinc-700 outline-none"
-                value={newGame.title}
-                onChange={(e) => setNewGame({ ...newGame, title: e.target.value })}
-                required
-              />
-              <input
-                placeholder="Console"
-                className="bg-zinc-900 p-3 rounded-lg border border-zinc-700"
-                value={newGame.platform}
-                onChange={(e) => setNewGame({ ...newGame, platform: e.target.value })}
-                required
-              />
-              <input
-                placeholder="Year"
-                type="number"
-                className="bg-zinc-900 p-3 rounded-lg border border-zinc-700"
-                value={newGame.year}
-                onChange={(e) => setNewGame({ ...newGame, year: e.target.value })}
-                required
-              />
-              <input
-                placeholder="Image URL"
-                className="sm:col-span-2 bg-zinc-900 p-3 rounded-lg border border-zinc-700"
-                value={newGame.image}
-                onChange={(e) => setNewGame({ ...newGame, image: e.target.value })}
-              />
-              <button
-                type="submit"
-                className="sm:col-span-2 bg-white text-black py-3 rounded-lg font-bold hover:bg-zinc-200"
-              >
+              <input placeholder="Game Title" className="sm:col-span-2 bg-zinc-900 p-3 rounded-lg border border-zinc-700 outline-none" value={newGame.title} onChange={(e) => setNewGame({ ...newGame, title: e.target.value })} required />
+              <input placeholder="Console" className="bg-zinc-900 p-3 rounded-lg border border-zinc-700" value={newGame.platform} onChange={(e) => setNewGame({ ...newGame, platform: e.target.value })} required />
+              <input placeholder="Year" type="number" className="bg-zinc-900 p-3 rounded-lg border border-zinc-700" value={newGame.year} onChange={(e) => setNewGame({ ...newGame, year: e.target.value })} required />
+              <input placeholder="Image URL" className="sm:col-span-2 bg-zinc-900 p-3 rounded-lg border border-zinc-700" value={newGame.image} onChange={(e) => setNewGame({ ...newGame, image: e.target.value })} />
+              <button type="submit" className="sm:col-span-2 bg-white text-black py-3 rounded-lg font-bold hover:bg-zinc-200">
                 Save to Collection
               </button>
             </form>
           </div>
         )}
 
-        <Filters
-          search={search}
-          setSearch={setSearch}
-          platform={platform}
-          setPlatform={setPlatform}
-          sort={sort}
-          setSort={setSort}
-          platforms={platforms}
-        />
+        <Filters search={search} setSearch={setSearch} platform={platform} setPlatform={setPlatform} sort={sort} setSort={setSort} platforms={platforms} />
 
         <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mt-8">
           {filtered.map((game) => (
             <div key={game.id} className="relative group">
-              <GameCard
-                game={game}
-                onToggle={() => toggleOwned(game.id)}
-                onCondition={(val) => updateCondition(game.id, val)}
-              />
-              <button
-                onClick={() => deleteGame(game.id)}
-                className="absolute top-2 right-2 bg-red-600/90 hover:bg-red-600 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
-              >
+              <GameCard game={game} onToggle={() => toggleOwned(game.id)} onCondition={(val) => updateCondition(game.id, val)} />
+              <button onClick={() => deleteGame(game.id)} className="absolute top-2 right-2 bg-red-600/90 hover:bg-red-600 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10">
                 <svg width="16" height="16" fill="white" viewBox="0 0 16 16">
                   <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-                  <path
-                    fillRule="evenodd"
-                    d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"
-                  />
+                  <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
                 </svg>
               </button>
             </div>
