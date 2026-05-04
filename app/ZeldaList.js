@@ -51,9 +51,17 @@ export default function Home() {
     }
   };
 
-  const toggleOwned = (id) => {
-    setGames((prev) => prev.map((g) => g.id === id ? { ...g, owned: !g.owned, condition: "" } : g));
+  const toggleOwned = async (id) => {
+  // 1. Update UI immediately (local state)
+    const updatedGames = games.map((g) => 
+      g.id === id ? { ...g, owned: !g.owned, condition: "" } : g
+    );
+    setGames(updatedGames);
+
+  // 2. Save to Cloud immediately
+    await saveGamesAction(updatedGames); 
   };
+
 
   const updateCondition = (id, value) => {
     setGames((prev) => prev.map((g) => g.id === id ? { ...g, condition: value } : g));
