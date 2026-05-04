@@ -45,22 +45,19 @@ export default function Home() {
     setShowForm(false);
   };
 
-  const deleteGame = (id) => {
-    if (confirm("Are you sure you want to remove this game?")) {
-      setGames((prev) => prev.filter((g) => g.id !== id));
-    }
-  };
-
-  const toggleOwned = async (id) => {
-  // 1. Update UI immediately (local state)
+  const toggleOwned = (id) => {
+  // 1. Calculate the new state
     const updatedGames = games.map((g) => 
       g.id === id ? { ...g, owned: !g.owned, condition: "" } : g
     );
+  
+  // 2. Update UI immediately
     setGames(updatedGames);
-
-  // 2. Save to Cloud immediately
-    await saveGamesAction(updatedGames); 
+  
+  // 3. Save to cloud immediately (don't wait for useEffect)
+    saveGamesAction(updatedGames); 
   };
+
 
 
   const updateCondition = (id, value) => {
