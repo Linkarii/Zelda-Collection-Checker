@@ -1,5 +1,7 @@
 "use client";
 
+import { saveGames, getGames } from "./actions";
+
 import './globals.css';
 import { useEffect, useState } from "react";
 import { initialGames } from "../lib/games";
@@ -19,18 +21,16 @@ export default function Home() {
     image: ""
   });
 
-  // Load from Local Storage on start
+    // Load from Redis (Global Storage) on start
   useEffect(() => {
-    const saved = localStorage.getItem("games");
-    setGames(saved ? JSON.parse(saved) : initialGames);
+    const loadGlobalGames = async () => {
+      const saved = await getGames();
+      // Use Redis data if it exists, otherwise fall back to your initial list
+      setGames(saved || initialGames);
+    };
+    loadGlobalGames();
   }, []);
 
-  // Save to Local Storage whenever games change
-  useEffect(() => {
-    if (games && games.length > 0) {
-      localStorage.setItem("games", JSON.stringify(games));
-    }
-  }, [games]);
 
   const handleAddGame = (e) => {
     e.preventDefault();
@@ -52,19 +52,29 @@ export default function Home() {
     }
   };
 
-  const toggleOwned = (id) => {
-    setGames((prev) =>
-      prev.map((g) =>
-        g.id === id ? { ...g, owned: !g.owned, condition: "" } : g
-      )
+  const toggleOwned = async (id) => {
+  // 1. Create the updated list locally first
+    const updatedGames = games.map((g) =>
+      g.id === id ? { ...g, owned: !g.owned, condition: "" } : g
     );
+
+  // 2. Update the UI state
+    setGames(updatedGames);
+
+  // 3. Save the new list to Redis so every device sees it
+    await saveGames(updatedGames);
   };
 
-  const updateCondition = (id, value) => {
-    setGames((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, condition: value } : g))
+
+  const updateCondition = async (id, value) => {
+    const updatedGames = games.map((g) => 
+      g.id === id ? { ...g, condition: value } : g
     );
+  
+    setGames(updatedGames);
+    await saveGames(updatedGames); // Global sync
   };
+
 
   const platforms = ["All", ...new Set(games.map((g) => g.platform))];
 
