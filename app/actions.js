@@ -1,20 +1,22 @@
-// app/actions.js
 "use server"
-import { Redis } from "@upstash/redis"
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-})
-
+import { kv } from "@vercel/kv";
 
 export async function saveGames(games) {
-  // Stores the entire array under a single key for all users
-  await redis.set("zelda_collection", JSON.stringify(games));
+  try {
+    // Stores the game list in your Vercel KV database
+    await kv.set("zelda_collection", games);
+  } catch (error) {
+    console.error("KV Save Error:", error);
+  }
 }
 
 export async function getGames() {
-  const data = await redis.get("zelda_collection");
-  // If data exists, return it; otherwise return null
-  return data ? data : null;
+  try {
+    // Retrieves the game list from your Vercel KV database
+    const data = await kv.get("zelda_collection");
+    return data;
+  } catch (error) {
+    console.error("KV Get Error:", error);
+    return null;
+  }
 }
