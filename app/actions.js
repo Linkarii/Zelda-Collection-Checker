@@ -1,18 +1,24 @@
 "use server"
-import { kv } from "@vercel/kv";
+import { createClient } from '@vercel/kv';
+
+// This manually maps the library to your specific Vercel variable names
+const kv = createClient({
+  url: process.env.kv_KV_REST_API_URL,
+  token: process.env.kv_KV_REST_API_TOKEN,
+});
 
 export async function saveGames(games) {
   try {
-    // Stores the game list in your Vercel KV database
     await kv.set("zelda_collection", games);
+    return { success: true };
   } catch (error) {
     console.error("KV Save Error:", error);
+    throw new Error(error.message);
   }
 }
 
 export async function getGames() {
   try {
-    // Retrieves the game list from your Vercel KV database
     const data = await kv.get("zelda_collection");
     return data;
   } catch (error) {
