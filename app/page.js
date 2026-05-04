@@ -23,12 +23,13 @@ export default function Home() {
   loadGames();
 }, []);
 
-  // Save to Cloud whenever the 'games' list changes
   useEffect(() => {
-    if (games.length > 0) {
+  // Only save if games actually exists and isn't just the starting empty list
+    if (games && games.length > 0) {
       saveGamesAction(games);
     }
   }, [games]);
+
 
   const handleAddGame = (e) => {
     e.preventDefault();
