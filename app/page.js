@@ -21,36 +21,84 @@ export default function Home() {
     image: ""
   });
 
-    // Load from Redis (Global Storage) on start
-  useEffect(() => {
-    const loadGlobalGames = async () => {
-      const saved = await getGames();
-      // Use Redis data if it exists, otherwise fall back to your initial list
-      setGames(saved || initialGames);
-    };
-    loadGlobalGames();
-  }, []);
+useEffect(() => {
+  const loadGlobalData = async () => {
+    const saved = await getGames();
+    // ONLY use initialGames if the database is completely empty (null)
+    if (saved !== null) {
+      setGames(saved);
+    } else {
+      setGames(initialGames);
+    }
+  };
+  loadGlobalData();
+}, []);
 
 
-  const handleAddGame = (e) => {
+
+    const handleAddGame = async (e) => {
     e.preventDefault();
-    const gameToAdd = {
-      ...newGame,
-      id: Date.now(),
-      year: parseInt(newGame.year) || 0,
-      owned: false,
-      condition: ""
+    const gameToAdd = { 
+      ...newGame, 
+      id: Date.now(), 
+      year: parseInt(newGame.year) || 0, 
+      owned: false, 
+      condition: "" 
     };
-    setGames([gameToAdd, ...games]);
+
+    // 1. Create the new list
+    const updatedGames = [gameToAdd, ...games];
+    
+    // 2. Update the local UI state
+    setGames(updatedGames);
+    
+    // 3. Save to Vercel KV/Redis globally
+    await saveGames(updatedGames);
+
+    // 4. Reset the form
     setNewGame({ title: "", platform: "", year: "", image: "" });
     setShowForm(false);
   };
 
-  const deleteGame = (id) => {
+  const deleteGame = async (id) => {
     if (confirm("Are you sure you want to remove this game?")) {
-      setGames((prev) => prev.filter((g) => g.id !== id));
+      // 1. Filter the list
+      const updatedGames = games.filter((g) => g.id !== id);
+      
+      // 2. Update the local UI state
+      setGames(updatedGames);
+      
+      // 3. Save to Vercel KV/Redis globally
+      await saveGames(updatedGames);
     }
   };
+
+  const toggleOwned = async (id) => {
+    // 1. Map the new state
+    const updatedGames = games.map((g) =>
+      g.id === id ? { ...g, owned: !g.owned, condition: "" } : g
+    );
+    
+    // 2. Update local UI
+    setGames(updatedGames);
+    
+    // 3. Save globally
+    await saveGames(updatedGames);
+  };
+
+  const updateCondition = async (id, value) => {
+    // 1. Map the new state
+    const updatedGames = games.map((g) =>
+      g.id === id ? { ...g, condition: value } : g
+    );
+    
+    // 2. Update local UI
+    setGames(updatedGames);
+    
+    // 3. Save globally
+    await saveGames(updatedGames);
+  };
+
 
   const toggleOwned = async (id) => {
   // 1. Create the updated list locally first
