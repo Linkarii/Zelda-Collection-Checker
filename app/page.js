@@ -1,4 +1,6 @@
 "use client";
+export const dynamic = 'force-dynamic';
+
 import { saveGames, getGames } from "./actions";
 import './globals.css';
 import { useEffect, useState } from "react";
@@ -26,8 +28,12 @@ export default function Home() {
     loadGlobalData();
   }, []);
 
+  const [isSaving, setIsSaving] = useState(false); // Add this state
+
   const handleAddGame = async (e) => {
     e.preventDefault();
+    setIsSaving(true); // Start "saving" state
+
     const gameToAdd = { 
       ...newGame, 
       id: Date.now(), 
@@ -35,12 +41,22 @@ export default function Home() {
       owned: false, 
       condition: "" 
     };
+    
     const updatedGames = [gameToAdd, ...games];
     setGames(updatedGames);
-    await saveGames(updatedGames);
-    setNewGame({ title: "", platform: "", year: "", image: "" });
-    setShowForm(false);
+
+    try {
+      await saveGames(updatedGames);
+      console.log("Successfully saved to Redis!");
+    } catch (err) {
+      alert("Error saving: " + err.message);
+    } finally {
+      setIsSaving(false); // Done saving
+      setNewGame({ title: "", platform: "", year: "", image: "" });
+      setShowForm(false);
+    }
   };
+
 
   const deleteGame = async (id) => {
     if (confirm("Are you sure you want to remove this game?")) {
